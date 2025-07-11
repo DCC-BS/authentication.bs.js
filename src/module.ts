@@ -25,7 +25,6 @@ export default defineNuxtModule({
             azureAdClientId: process.env.AZURE_AD_CLIENT_ID,
             azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET,
             authSecret: process.env.NUXT_AUTH_SECRET,
-            githubToken: process.env.GITHUB_TOKEN,
         };
 
         await installModule("@sidebase/nuxt-auth", {
@@ -59,17 +58,5 @@ export default defineNuxtModule({
         });
 
         addServerScanDir(resolver.resolve("./runtime/server"));
-
-        // addServerImportsDir(resolver.resolve("./runtime/server/utils"));
-
-        // // Add server API handlers
-        // addServerHandler({
-        //     route: "/api/auth/**",
-        //     handler: resolver.resolve("./runtime/server/api/auth/[...]"),
-        // });
-
-        // examples:
-        // addImportsDir(resolver.resolve('./runtime/composables'));
-        // addTypeTemplate({ filename: 'types/commands.d.ts', src: resolver.resolve('./runtime/models/commands.d.ts') });
     },
 });
