@@ -2,8 +2,8 @@ import type { EventHandler, EventHandlerRequest, H3Event } from "h3";
 import { createError, defineEventHandler, readBody } from "h3";
 import type { JWT } from "next-auth/jwt";
 // import { getServerSession, getToken } from "@sidebase/nuxt-auth";
-// import { useRuntimeConfig } from "nuxt/app";
 import { getServerSession, getToken } from "#auth";
+import { useRuntimeConfig } from '#imports'
 
 /**
  * Extended JWT type that includes an optional idToken for authentication
@@ -14,7 +14,7 @@ type JWTWithIdToken = JWT & { idToken?: string };
  * Function type for extracting the request body from an H3 event
  * @template TIn - The event handler request type
  * @template TBody - The expected body type
- */
+ */useRuntimeConfig
 export type BodyProvider<TIn extends EventHandlerRequest, TBody> = (
     event: H3Event<TIn>,
 ) => Promise<TBody>;
