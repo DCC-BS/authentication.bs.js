@@ -28,28 +28,6 @@ export default defineNuxtModule({
             githubToken: process.env.GITHUB_TOKEN,
         };
 
-        extendPages((pages) => {
-            pages.unshift({
-                name: "auth-signin",
-                path: "/auth/signin",
-                file: resolver.resolve("./runtime/pages/auth/signIn.vue"),
-                meta: {
-                    auth: { unauthenticatedOnly: true, navigateAuthenticatedTo: "/" },
-                    layout: "auth",
-                }
-            });
-        });
-
-        addServerScanDir(resolver.resolve("./runtime/server"));
-
-        // addServerImportsDir(resolver.resolve("./runtime/server/utils"));
-
-        // // Add server API handlers
-        // addServerHandler({
-        //     route: "/api/auth/**",
-        //     handler: resolver.resolve("./runtime/server/api/auth/[...]"),
-        // });
-
         await installModule("@sidebase/nuxt-auth", {
             isEnabled: true,
             globalAppMiddleware: true,
@@ -64,6 +42,31 @@ export default defineNuxtModule({
                 enableOnWindowFocus: true,
             },
         });
+
+        extendPages((pages) => {
+            pages.unshift({
+                name: "auth-signin",
+                path: "/auth/signin",
+                file: resolver.resolve("./runtime/pages/auth/signIn.vue"),
+                meta: {
+                    auth: {
+                        unauthenticatedOnly: true,
+                        navigateAuthenticatedTo: "/",
+                    },
+                    layout: "auth",
+                },
+            });
+        });
+
+        addServerScanDir(resolver.resolve("./runtime/server"));
+
+        // addServerImportsDir(resolver.resolve("./runtime/server/utils"));
+
+        // // Add server API handlers
+        // addServerHandler({
+        //     route: "/api/auth/**",
+        //     handler: resolver.resolve("./runtime/server/api/auth/[...]"),
+        // });
 
         // examples:
         // addImportsDir(resolver.resolve('./runtime/composables'));
