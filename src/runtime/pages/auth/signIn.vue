@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
+import { useAuth } from '#imports'
 
 const { signIn } = useAuth();
 // const { t } = useI18n();
