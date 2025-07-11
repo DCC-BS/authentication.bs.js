@@ -44,7 +44,7 @@ onMounted(() => {
     }, 1000);
 
     setTimeout(() => {
-        // signIn("azure-ad");
+        signIn("azure-ad");
     }, 1500);
 
     // Cleanup interval after 10 seconds
