@@ -53,3 +53,11 @@ declare module "#auth" {
      */
     export function NuxtAuthHandler(nuxtAuthOptions?: AuthOptions);
 }
+
+declare module "#imports" {
+    import type { RouterMethod } from "h3";
+
+    export function useAuth(): {
+        signIn: (path?: string, method?: RouterMethod) => Promise<void>;
+    };
+}

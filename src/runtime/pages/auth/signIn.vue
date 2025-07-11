@@ -1,22 +1,27 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useAuth } from '#imports'
+import { useI18n, availableLocales, defaultLocale } from '../../localization';
 
 const { signIn } = useAuth();
-// const { t } = useI18n();
+const route = useRoute();
 
-function t(key: string): string {
-    // Mock translation function for demonstration purposes
-    const translations: Record<string, string> = {
-        "auth.connecting": "Connecting to Azure AD...",
-        "auth.authenticating": "Authenticating...",
-        "auth.redirecting": "Redirecting...",
-        "auth.welcomeBack": "Welcome Back!",
-        "auth.signInToContinue": "Please sign in to continue.",
-        "auth.azureAdDescription": "You are being redirected to Azure Active Directory for authentication.",
-    };
-    return translations[key] || key;
+// Extract locale from URL path (e.g., /en/auth/signin -> "en")
+function getLocaleFromUrl(): string {
+    const pathSegments = route.path.split('/').filter(Boolean);
+    const potentialLocale = pathSegments[0];
+
+    // Check if the first path segment is a valid locale
+    if (potentialLocale && availableLocales.includes(potentialLocale)) {
+        return potentialLocale;
+    }
+
+    return defaultLocale;
 }
+
+const local = getLocaleFromUrl();
+
+const { t } = useI18n(local);
 
 // Add reactive state for loading animation
 const isLoading = ref(true);
@@ -39,7 +44,7 @@ onMounted(() => {
     }, 1000);
 
     setTimeout(() => {
-        signIn("azure-ad");
+        // signIn("azure-ad");
     }, 1500);
 
     // Cleanup interval after 10 seconds
