@@ -64,7 +64,6 @@ export default NuxtAuthHandler({
                 // Azure AD roles come from the 'roles' claim
                 extendedToken.roles = azureProfile.roles || [];
 
-                console.log("JWT Token:", extendedToken);
                 return extendedToken;
             }
             return {

@@ -1,12 +1,6 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 
-// Remember to disable the middleware protection from your page!
-definePageMeta({
-    auth: { unauthenticatedOnly: true, navigateAuthenticatedTo: "/" },
-    layout: "auth",
-});
-
 const { signIn } = useAuth();
 // const { t } = useI18n();
 

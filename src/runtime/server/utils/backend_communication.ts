@@ -1,20 +1,14 @@
 import type { EventHandler, EventHandlerRequest, H3Event } from "h3";
 import { createError, defineEventHandler, readBody } from "h3";
-import type { JWT } from "next-auth/jwt";
-// import { getServerSession, getToken } from "@sidebase/nuxt-auth";
 import { getServerSession, getToken } from "#auth";
-import { useRuntimeConfig } from '#imports'
-
-/**
- * Extended JWT type that includes an optional idToken for authentication
- */
-type JWTWithIdToken = JWT & { idToken?: string };
+import type { ExtendedJWT, ExtendedSession } from "#auth";
+import { useRuntimeConfig } from "#imports";
 
 /**
  * Function type for extracting the request body from an H3 event
  * @template TIn - The event handler request type
  * @template TBody - The expected body type
- */useRuntimeConfig
+ */ useRuntimeConfig;
 export type BodyProvider<TIn extends EventHandlerRequest, TBody> = (
     event: H3Event<TIn>,
 ) => Promise<TBody>;
@@ -187,12 +181,12 @@ export const defineBackendHandler = <
             const session = await getServerSession(event);
             const token = (await getToken({
                 event,
-            })) as JWTWithIdToken | undefined;
+            })) as ExtendedJWT | undefined;
 
             // Check for session error (token refresh failed)
             // This happens when refresh tokens expire or become invalid
             if (
-                (session as { error?: string })?.error ===
+                (session as ExtendedSession)?.error ===
                 "RefreshAccessTokenError"
             ) {
                 throw createError({

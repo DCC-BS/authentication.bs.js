@@ -24,7 +24,6 @@ export default defineNuxtModule({
             azureAdTenantId: process.env.AZURE_AD_TENANT_ID,
             azureAdClientId: process.env.AZURE_AD_CLIENT_ID,
             azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-            apiUrl: process.env.API_URL,
             authSecret: process.env.NUXT_AUTH_SECRET,
             githubToken: process.env.GITHUB_TOKEN,
         };
@@ -34,6 +33,10 @@ export default defineNuxtModule({
                 name: "auth-signin",
                 path: "/auth/signin",
                 file: resolver.resolve("./runtime/pages/auth/signIn.vue"),
+                meta: {
+                    auth: { unauthenticatedOnly: true, navigateAuthenticatedTo: "/" },
+                    layout: "auth",
+                }
             });
         });
 
