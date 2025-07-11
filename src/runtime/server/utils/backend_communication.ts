@@ -3,7 +3,7 @@ import { createError, defineEventHandler, readBody } from "h3";
 import type { JWT } from "next-auth/jwt";
 // import { getServerSession, getToken } from "@sidebase/nuxt-auth";
 // import { useRuntimeConfig } from "nuxt/app";
-// import { getServerSession, getToken } from "#auth";
+import { getServerSession, getToken } from "#auth";
 
 /**
  * Extended JWT type that includes an optional idToken for authentication

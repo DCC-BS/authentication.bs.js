@@ -1,5 +1,5 @@
 import AzureADProvider from "next-auth/providers/azure-ad";
-// import { NuxtAuthHandler } from "#auth";
+import { NuxtAuthHandler } from "#auth";
 
 // Interface for Azure AD profile data
 interface AzureADProfile {

@@ -1,8 +1,10 @@
 import {
     addServerHandler,
     addServerImportsDir,
+    addServerScanDir,
     createResolver,
     defineNuxtModule,
+    extendPages,
     installModule,
 } from "@nuxt/kit";
 
@@ -27,6 +29,24 @@ export default defineNuxtModule({
             githubToken: process.env.GITHUB_TOKEN,
         };
 
+        extendPages((pages) => {
+            pages.unshift({
+                name: "auth-signin",
+                path: "/auth/signin",
+                file: resolver.resolve("./runtime/pages/auth/signIn.vue"),
+            });
+        });
+
+        addServerScanDir(resolver.resolve("./runtime/server"));
+
+        // addServerImportsDir(resolver.resolve("./runtime/server/utils"));
+
+        // // Add server API handlers
+        // addServerHandler({
+        //     route: "/api/auth/**",
+        //     handler: resolver.resolve("./runtime/server/api/auth/[...]"),
+        // });
+
         await installModule("@sidebase/nuxt-auth", {
             isEnabled: true,
             globalAppMiddleware: true,
@@ -40,14 +60,6 @@ export default defineNuxtModule({
                 enablePeriodically: 10000,
                 enableOnWindowFocus: true,
             },
-        });
-
-        addServerImportsDir(resolver.resolve("./runtime/server/utils"));
-
-        // Add server API handlers
-        addServerHandler({
-            route: "/api/auth/**",
-            handler: resolver.resolve("./runtime/server/api/auth/[...]"),
         });
 
         // examples:
