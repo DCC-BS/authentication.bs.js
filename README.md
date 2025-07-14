@@ -2,7 +2,7 @@
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/DCC-BS/authentication.bs.js)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/DCC-BS/authentication.bs.js/publish.yml)
-[![codecov](https://codecov.io/gh/DCC-BS/authentication.bs.js/graph/badge.svg?token=3PBNL8OR24)](https://codecov.io/gh/DCC-BS/authentication.bs.js)
+<!-- [![codecov](https://codecov.io/gh/DCC-BS/authentication.bs.js/graph/badge.svg?token=3PBNL8OR24)](https://codecov.io/gh/DCC-BS/authentication.bs.js) -->
 
 A comprehensive Nuxt module that provides Azure Active Directory authentication and seamless backend communication for TypeScript/JavaScript applications. This module handles user authentication, session management, token refresh, and provides utilities for making authenticated requests to backend APIs.
 
