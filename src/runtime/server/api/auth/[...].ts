@@ -47,29 +47,37 @@ export default NuxtAuthHandler({
     ],
     callbacks: {
         async jwt({ token, account, profile }) {
+            
             const extendedToken = token as ExtendedToken;
 
-            // Initial sign in
-            if (account && profile) {
-                extendedToken.idToken = account.id_token;
+            if(account && profile) {
                 extendedToken.accessToken = account.access_token;
                 extendedToken.refreshToken = account.refresh_token;
-                extendedToken.provider = account.provider;
-
-                // Inject Azure AD profile data into JWT token
-                const azureProfile = profile as AzureADProfile;
-                extendedToken.sub = azureProfile.sub || azureProfile.oid; // Azure AD uses 'oid' for user ID
-                extendedToken.email = azureProfile.email;
-                extendedToken.name = azureProfile.name;
-                // Azure AD roles come from the 'roles' claim
-                extendedToken.roles = azureProfile.roles || [];
-
-                return extendedToken;
             }
-            return {
-                ...extendedToken,
-                error: "RefreshAccessTokenError",
-            };
+
+            return extendedToken;
+
+            // // Initial sign in
+            // if (account && profile) {
+            //     extendedToken.idToken = account.id_token;
+            //     extendedToken.accessToken = account.access_token;
+            //     extendedToken.refreshToken = account.refresh_token;
+            //     extendedToken.provider = account.provider;
+
+            //     // Inject Azure AD profile data into JWT token
+            //     const azureProfile = profile as AzureADProfile;
+            //     extendedToken.sub = azureProfile.sub || azureProfile.oid; // Azure AD uses 'oid' for user ID
+            //     extendedToken.email = azureProfile.email;
+            //     extendedToken.name = azureProfile.name;
+            //     // Azure AD roles come from the 'roles' claim
+            //     extendedToken.roles = azureProfile.roles || [];
+
+            //     return extendedToken;
+            // }
+            // return {
+            //     ...extendedToken,
+            //     error: "RefreshAccessTokenError",
+            // };
         },
     },
 });
