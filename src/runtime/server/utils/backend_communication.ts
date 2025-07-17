@@ -206,8 +206,8 @@ export const defineBackendHandler = <
                 });
             }
 
-            // Extract ID token for backend authentication
-            const idToken = token?.idToken;
+            // Extract access token for backend authentication
+            const accessToken = token?.accessToken;
 
             // Make authenticated request to backend API using the configured fetcher
             const backendResponse = await fetcher(
@@ -216,8 +216,7 @@ export const defineBackendHandler = <
                 body,
                 {
                     "Content-Type": "application/json",
-                    Authorization: idToken ? `Bearer ${idToken}` : "",
-                    "X-Access-Token": token ? JSON.stringify(token) : "",
+                    Authorization: accessToken ? `Bearer ${accessToken}` : "",
                 },
             );
 
