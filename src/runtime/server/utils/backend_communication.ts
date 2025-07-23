@@ -229,8 +229,12 @@ export const defineBackendHandler = <
         } catch (err) {
             // preserve error structure for client
             if (err && typeof err === "object" && "statusCode" in err) {
-                // Re-throw H3 errors as-is
-                throw err;
+                throw createError({
+                    statusCode: err.statusCode,
+                    statusMessage: err.statusMessage,
+                    message: err.message,
+                    data: { originalError: err },
+                });
             }
 
             // Wrap other errors in a consistent format

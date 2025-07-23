@@ -16,14 +16,178 @@ A comprehensive Nuxt module that provides Azure Active Directory authentication 
 - 🎨 **Custom Sign-in Pages** - Pre-built authentication UI components
 - 🛠️ **TypeScript First** - Complete type safety and IntelliSense support
 
+## Azure Entra Configuration
+
+### Prerequisites
+
+You need two Azure AD applications:
+
+1. A client application for the frontend (the nuxt app)
+2. A backend application for the backend (the fastapi app)
+
+The apps are both single tenant apps.
+
+### API / FastAPI Azure Entra ID App Configuration
+
+Visit the [Azure Portal](https://portal.azure.com) and configure the Entra App for the backend created by the IT department.
+
+* Change token version to `v2.0`
+  * In the left menu bar, click `Manifest` and find the line that says `requestedAccessTokenVersion`. Change its value from `null` to `2`
+  * Click `Save`
+* Add an application scope
+  * In the left menu bar, click `Expose an API`
+  * Click `Add a scope`
+  * Use default Application ID URI (e.g. `api://<your-app-id>`)
+  * Set `Scope name` to `user_impersonation`
+  * Set "Who can consent?" to `Admins and users`
+  * Set `Admin consent display name` to `User impersonation`
+  * Set `Admin consent description` to `Allow the app to impersonate the user`
+  * Set `User consent display name` to `User impersonation`
+  * Set `User consent description` to `Allow the app to impersonate the user`
+  * Set `State` to `Enabled`
+  * Click `Add scope`
+  * Click `Save`
+* Note down relevant information:
+  * `Application (client) ID`
+  * `Directory (tenant) ID`
+  * `Application ID URI` (e.g. `api://<your-app-id>/user_impersonation`)
+
+If you need application roles follow these steps:
+* In the left menu bar, click `Roles and administrators`
+  * Click `Add a role`
+  * Set `Display name` to `<your-role-name>`
+  * Set `Description` to `<your-role-description>`
+  * Set `Value` to `<your-role-value>` This is the value that will be used to identify the role in the backend.
+  * Set `Allowed member types` to `Both`
+  * Click `Add role`
+  * Click `Save`
+
+Now we need to assign user and groups to that roles:
+
+* Navigate to to the Azure Entra Enterprise Application
+  * Click `Users and groups`
+  * Click `Add user/group`
+  * Select the user or group you want to assign the role to
+  * Select the role you want to assign
+  * Click `Assign`
+  * Click `Save`
+
+Now we need to configure the FastAPI app to authorize the API calls:
+
+Install the [fastapi-azure-auth](https://intility.github.io/fastapi-azure-auth/installation) package:
+
+```bash
+uv add fastapi-azure-auth
+```
+
+Configure `.env` file:
+
+```env
+AZURE_CLIENT_ID="YOUR_AZURE_CLIENT_ID"
+AZURE_TENANT_ID="YOUR_AZURE_TENANT_ID"
+SCOPE_DESCRIPTION="user_impersonation" # The scope name of the Azure Entra Backend API App
+CLIENT_URL="http://localhost:3000" # The URL of the Nuxt app
+```
+
+
+Add the following to your `app.py`:
+
+```python
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi_azure_auth import SingleTenantAzureAuthorizationCodeBearer
+from contextlib import asynccontextmanager
+from typing import AsyncGenerator
+import os
+
+scope_name = f"api://{os.getenv('AZURE_CLIENT_ID')}/{os.getenv('SCOPE_DESCRIPTION')}"
+scopes = {
+    scope_name: os.getenv('SCOPE_DESCRIPTION'),
+}
+azure_scheme = SingleTenantAzureAuthorizationCodeBearer(
+    app_client_id=os.getenv('AZURE_CLIENT_ID'),
+    tenant_id=os.getenv('AZURE_TENANT_ID'),
+    scopes=scopes,
+)
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
+    """
+    Load OpenID config on startup.
+    """
+    await azure_scheme.openid_config.load_config()
+    yield
+
+def get_app() -> FastAPI:
+    app: FastAPI = FastAPI(
+        title="Your API",
+        lifespan=lifespan,
+    )
+
+    origins: list[str] = [os.getenv('CLIENT_URL'), "http://localhost", "http://localhost:8080", "http://localhost:8000"]
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+    return app
+
+app = get_app()
+
+# Example route
+@app.get("/users/me", response_model=User)
+async def read_users_me(current_user: Annotated[User, Depends(azure_scheme)]):
+    return current_user
+```
+
+### Client Application
+
+Visit the [Azure Portal](https://portal.azure.com) and configure the Entra App for the nuxt frontend created by the IT department.
+
+* Change the token version to `v2.0`
+  * In the left menu bar, click `Manifest` and find the line that says `requestedAccessTokenVersion`. Change its value from `null` to `2`
+  * Click `Save`
+* Add authentication to the frontend app
+  * In the left menu bar, click `Authentication`
+  * Click `Add a platform`
+  * Select `Web`
+  * Set `Redirect URIs` to `http://localhost:3000/api/auth/callback/azure-ad`
+  * No Access Tokens or ID Tokens are needed (do not check the boxes)
+  * Click `Save`
+* Configure the API permissions
+  * In the left menu bar, click `API Permissions`
+  * Click `Add a permission`
+  * Click `My APIs`
+  * Select the API you want to grant permissions to
+  * Select the `user_impersonation` scope / permission
+  * Click `Add permissions`
+  * Click `Save`
+  * ** IMPORTANT **: Ask someone from the IT department / EntraID team to grant admin consent for the `user_impersonation` scope / permission.
+* Create a client secret
+  * In the left menu bar, click `Certificates & secrets`
+  * Click `New client secret`
+  * Set `Description` to `Nuxt frontend client secret`
+  * Click `Add`
+  * Note down the secret **value** (not the key id!)
+* Note down relevant information:
+  * `Application (client) ID`
+  * `Client secret`
+  * `Directory (tenant) ID`
+
+Now you can follow the [Quick Setup](#quick-setup) instructions.
+
 ## Quick Setup
 
 Install the module to your Nuxt application with:
 
 ```bash
-bun add git+https://github.com/DCC-BS/authentication.bs.js.git#v1.0.0
+bun add git+https://github.com/DCC-BS/authentication.bs.js.git#v1.1.0
 ```
-replace `v1.0.0` with the latest version tag: ![GitHub package.json version](https://img.shields.io/github/package-json/v/DCC-BS/authentication.bs.js)
+replace `v1.1.0` with the latest version tag: ![GitHub package.json version](https://img.shields.io/github/package-json/v/DCC-BS/authentication.bs.js)
 
 
 Add it to your `nuxt.config.ts`:
@@ -45,6 +209,7 @@ NUXT_AUTH_SECRET="YOUR_REALLY_STRONG_SECRET_FOR_SESSION_ENCRYPTION_32_CHARS_MIN"
 AZURE_AD_TENANT_ID="YOUR_AZURE_TENANT_ID"
 AZURE_AD_CLIENT_ID="YOUR_AZURE_CLIENT_ID"
 AZURE_AD_CLIENT_SECRET="YOUR_AZURE_CLIENT_SECRET"
+AZURE_AD_API_CLIENT_ID="YOUR_AZURE_BACKEND_API_CLIENT_ID"
 
 # Only required for production
 AUTH_ORIGIN=https://your_domain_name/api/auth
