@@ -85,6 +85,7 @@ Configure `.env` file:
 ```env
 AZURE_CLIENT_ID="YOUR_AZURE_CLIENT_ID"
 AZURE_TENANT_ID="YOUR_AZURE_TENANT_ID"
+AZURE_AD_API_CLIENT_ID="YOUR AZURE API CLIENT ID"
 SCOPE_DESCRIPTION="user_impersonation" # The scope name of the Azure Entra Backend API App
 CLIENT_URL="http://localhost:3000" # The URL of the Nuxt app
 ```

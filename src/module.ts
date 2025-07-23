@@ -24,6 +24,7 @@ export default defineNuxtModule({
             azureAdTenantId: process.env.AZURE_AD_TENANT_ID,
             azureAdClientId: process.env.AZURE_AD_CLIENT_ID,
             azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET,
+            azureAdAPIClientId: process.env.AZURE_AD_API_CLIENT_ID,
             authSecret: process.env.NUXT_AUTH_SECRET,
         };
 
