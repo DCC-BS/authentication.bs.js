@@ -70,7 +70,6 @@ export default NuxtAuthHandler({
             return extendedToken;
         },
         async session({ session, token }) {
-            session.accessToken = token.accessToken;
             session.idToken = token.idToken;
 
             // Check if we need to refresh the API access token
