@@ -2,29 +2,43 @@ import AzureADProvider from "next-auth/providers/azure-ad";
 import { NuxtAuthHandler } from "#auth";
 import { useRuntimeConfig } from '#imports'
 
-// Interface for Azure AD profile data
-interface AzureADProfile {
-    sub?: string;
-    oid?: string;
-    email?: string;
-    name?: string;
-    image?: string;
-    roles?: string[];
+// Helper function to decode JWT without verification (for reading claims)
+function decodeJWT(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Error decoding JWT:', error);
+        return null;
+    }
 }
 
-// Interface for extended token with expiration info and profile data
-interface ExtendedToken extends Record<string, unknown> {
-    idToken?: string;
-    refreshToken?: string;
-    expiresAt?: number;
-    provider?: string;
-    error?: string;
-    // Azure AD profile data
-    sub?: string;
-    email?: string;
-    name?: string;
-    image?: string;
-    roles?: string[];
+async function getApiAccessToken(refreshToken: unknown) {
+    const config = useRuntimeConfig();
+    const url = `https://login.microsoftonline.com/${config.azureAdTenantId}/oauth2/v2.0/token`;
+    const body = {
+        grant_type: "refresh_token",
+        refresh_token: refreshToken,
+        client_id: config.azureAdClientId,
+        client_secret: config.azureAdClientSecret,
+        scope: `api://${config.azureAdAPIClientId}/user_impersonation`,
+    }
+    const response = await $fetch(url, {
+        method: "POST",
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: body,
+    });
+    const data = await response.json();
+    if (!data.access_token) {
+        throw new Error("Failed to get API access token");
+    }
+    return data.access_token;
 }
 
 export default NuxtAuthHandler({
@@ -33,51 +47,42 @@ export default NuxtAuthHandler({
         signIn: "/auth/signin",
     },
     providers: [
-        // @ts-expect-error You need to use .default here for it to work during SSR. May be fixed via Vite at some point
         AzureADProvider.default({
             clientId: useRuntimeConfig().azureAdClientId,
             clientSecret: useRuntimeConfig().azureAdClientSecret,
             tenantId: useRuntimeConfig().azureAdTenantId,
             authorization: {
                 params: {
-                    scope: "openid email profile User.Read",
+                    scope: "openid profile email offline_access User.Read",
                 },
             },
         }),
     ],
     callbacks: {
         async jwt({ token, account, profile }) {
-            
-            const extendedToken = token as ExtendedToken;
-
-            if(account && profile) {
+            const extendedToken = token;
+            if (account && profile) {
                 extendedToken.accessToken = account.access_token;
                 extendedToken.refreshToken = account.refresh_token;
+                // ID Token for client side checks
+                extendedToken.idToken = account.id_token;
             }
-
             return extendedToken;
-
-            // // Initial sign in
-            // if (account && profile) {
-            //     extendedToken.idToken = account.id_token;
-            //     extendedToken.accessToken = account.access_token;
-            //     extendedToken.refreshToken = account.refresh_token;
-            //     extendedToken.provider = account.provider;
-
-            //     // Inject Azure AD profile data into JWT token
-            //     const azureProfile = profile as AzureADProfile;
-            //     extendedToken.sub = azureProfile.sub || azureProfile.oid; // Azure AD uses 'oid' for user ID
-            //     extendedToken.email = azureProfile.email;
-            //     extendedToken.name = azureProfile.name;
-            //     // Azure AD roles come from the 'roles' claim
-            //     extendedToken.roles = azureProfile.roles || [];
-
-            //     return extendedToken;
-            // }
-            // return {
-            //     ...extendedToken,
-            //     error: "RefreshAccessTokenError",
-            // };
         },
+        async session({ session, token }) {
+            session.idToken = token.idToken;
+
+            // Check if we need to refresh the API access token
+            const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+            const tokenExpired = !session.apiAccessTokenExpiresAt || session.apiAccessTokenExpiresAt <= currentTimeInSeconds;
+
+            if (!session.apiAccessToken || tokenExpired) {
+                session.apiAccessToken = await getApiAccessToken(token.refreshToken);
+                const decoded = decodeJWT(session.apiAccessToken);
+                session.apiAccessTokenExpiresAt = decoded.exp;
+                session.user.roles = decoded.roles;
+            }
+            return session;
+        }
     },
 });

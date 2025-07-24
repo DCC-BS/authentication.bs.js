@@ -52,8 +52,6 @@ export function t(key: string, locale: string = i18nConfig.locale): string {
         return key;
     }
 
-    console.log(`Translating key "${key}" for locale "${locale}"`);
-
     // Split the key by dots to support nested object access
     const keyParts = key.split(".");
     let result: unknown = messages[locale];

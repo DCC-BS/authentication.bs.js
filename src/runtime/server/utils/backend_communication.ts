@@ -211,7 +211,7 @@ export const defineBackendHandler = <
             }
 
             // Extract access token for backend authentication
-            const accessToken = token?.accessToken;
+            const apiAccessToken = session?.apiAccessToken;
 
             // Make authenticated request to backend API using the configured fetcher
             const backendResponse = await fetcher(
@@ -220,7 +220,7 @@ export const defineBackendHandler = <
                 body,
                 {
                     "Content-Type": "application/json",
-                    Authorization: accessToken ? `Bearer ${accessToken}` : "",
+                    Authorization: apiAccessToken ? `Bearer ${apiAccessToken}` : "",
                 },
             );
 
@@ -229,8 +229,12 @@ export const defineBackendHandler = <
         } catch (err) {
             // preserve error structure for client
             if (err && typeof err === "object" && "statusCode" in err) {
-                // Re-throw H3 errors as-is
-                throw err;
+                throw createError({
+                    statusCode: err.statusCode,
+                    statusMessage: err.statusMessage,
+                    message: err.message,
+                    data: { originalError: err },
+                });
             }
 
             // Wrap other errors in a consistent format
