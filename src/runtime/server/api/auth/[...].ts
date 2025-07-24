@@ -17,7 +17,7 @@ function decodeJWT(token) {
     }
 }
 
-export async function getApiAccessToken(refreshToken: unknown) {
+async function getApiAccessToken(refreshToken: unknown) {
     const config = useRuntimeConfig();
     const url = `https://login.microsoftonline.com/${config.azureAdTenantId}/oauth2/v2.0/token`;
     const body = {
@@ -53,7 +53,7 @@ export default NuxtAuthHandler({
             tenantId: useRuntimeConfig().azureAdTenantId,
             authorization: {
                 params: {
-                    scope: "openid profile email offline_access User.Read", // api://${useRuntimeConfig().azureAdAPIClientId}/user_impersonation`,
+                    scope: "openid profile email offline_access User.Read",
                 },
             },
         }),
@@ -72,14 +72,16 @@ export default NuxtAuthHandler({
         async session({ session, token }) {
             session.accessToken = token.accessToken;
             session.idToken = token.idToken;
-            console.log("Expires at", session.apiAccessToken?.expiresAt);
-            if (!session.apiAccessToken || session.apiAccessToken.expiresAt < Date.now()) {
+
+            // Check if we need to refresh the API access token
+            const currentTimeInSeconds = Math.floor(Date.now() / 1000);
+            const tokenExpired = !session.apiAccessTokenExpiresAt || session.apiAccessTokenExpiresAt <= currentTimeInSeconds;
+
+            if (!session.apiAccessToken || tokenExpired) {
                 session.apiAccessToken = await getApiAccessToken(token.refreshToken);
                 const decoded = decodeJWT(session.apiAccessToken);
-                console.log("Decoded", decoded);
-                session.apiAccessToken.expiresAt = decoded.exp * 1000;
+                session.apiAccessTokenExpiresAt = decoded.exp;
                 session.user.roles = decoded.roles;
-                console.log("New access token", session.apiAccessToken.expiresAt);
             }
             return session;
         }
