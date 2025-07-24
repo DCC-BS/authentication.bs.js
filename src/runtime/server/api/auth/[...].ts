@@ -1,6 +1,22 @@
 import AzureADProvider from "next-auth/providers/azure-ad";
 import { NuxtAuthHandler } from "#auth";
 import { useRuntimeConfig } from '#imports'
+import { getApiAccessToken } from "../utils/apiAccessToken";
+
+// Helper function to decode JWT without verification (for reading claims)
+function decodeJWT(token) {
+    try {
+        const base64Url = token.split('.')[1];
+        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
+            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+        }).join(''));
+        return JSON.parse(jsonPayload);
+    } catch (error) {
+        console.error('Error decoding JWT:', error);
+        return null;
+    }
+}
 
 
 export default NuxtAuthHandler({
@@ -9,14 +25,13 @@ export default NuxtAuthHandler({
         signIn: "/auth/signin",
     },
     providers: [
-        // @ts-expect-error You need to use .default here for it to work during SSR. May be fixed via Vite at some point
         AzureADProvider.default({
             clientId: useRuntimeConfig().azureAdClientId,
             clientSecret: useRuntimeConfig().azureAdClientSecret,
             tenantId: useRuntimeConfig().azureAdTenantId,
             authorization: {
                 params: {
-                    scope: `openid profile email offline_access api://${useRuntimeConfig().azureAdAPIClientId}/user_impersonation`,
+                    scope: "openid profile email offline_access User.Read", // api://${useRuntimeConfig().azureAdAPIClientId}/user_impersonation`,
                 },
             },
         }),
@@ -33,9 +48,17 @@ export default NuxtAuthHandler({
             return extendedToken;
         },
         async session({ session, token }) {
-            // Add the access token to the session so client can use it
             session.accessToken = token.accessToken;
             session.idToken = token.idToken;
+            console.log("Expires at", session.apiAccessToken?.expiresAt);
+            if (!session.apiAccessToken || session.apiAccessToken.expiresAt < Date.now()) {
+                session.apiAccessToken = await getApiAccessToken(token.refreshToken);
+                const decoded = decodeJWT(session.apiAccessToken);
+                console.log("Decoded", decoded);
+                session.apiAccessToken.expiresAt = decoded.exp * 1000;
+                session.user.roles = decoded.roles;
+                console.log("New access token", session.apiAccessToken.expiresAt);
+            }
             return session;
         }
     },

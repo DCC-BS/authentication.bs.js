@@ -211,7 +211,7 @@ export const defineBackendHandler = <
             }
 
             // Extract access token for backend authentication
-            const accessToken = token?.accessToken;
+            const apiAccessToken = session?.apiAccessToken;
 
             // Make authenticated request to backend API using the configured fetcher
             const backendResponse = await fetcher(
@@ -220,7 +220,7 @@ export const defineBackendHandler = <
                 body,
                 {
                     "Content-Type": "application/json",
-                    Authorization: accessToken ? `Bearer ${accessToken}` : "",
+                    Authorization: apiAccessToken ? `Bearer ${apiAccessToken}` : "",
                 },
             );
 
