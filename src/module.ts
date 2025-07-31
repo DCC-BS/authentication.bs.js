@@ -1,6 +1,4 @@
 import {
-    addServerHandler,
-    addServerImportsDir,
     addServerScanDir,
     createResolver,
     defineNuxtModule,
@@ -21,11 +19,11 @@ export default defineNuxtModule({
         // Set runtime configuration
         nuxt.options.runtimeConfig = {
             ...nuxt.options.runtimeConfig,
-            azureAdTenantId: process.env.AZURE_AD_TENANT_ID,
-            azureAdClientId: process.env.AZURE_AD_CLIENT_ID,
-            azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET,
-            azureAdAPIClientId: process.env.AZURE_AD_API_CLIENT_ID,
-            authSecret: process.env.AUTH_SECRET,
+            azureAdTenantId: process.env.AZURE_AD_TENANT_ID ?? "NA",
+            azureAdClientId: process.env.AZURE_AD_CLIENT_ID ?? "NA",
+            azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET ?? "NA",
+            azureAdAPIClientId: process.env.AZURE_AD_API_CLIENT_ID ?? "NA",
+            authSecret: process.env.AUTH_SECRET ?? "NA",
         };
 
         await installModule("@sidebase/nuxt-auth", {
