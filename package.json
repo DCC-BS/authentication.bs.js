@@ -50,5 +50,5 @@
         "happy-dom": "^18.0.0",
         "vitest-environment-nuxt": "^1.0.1"
     },
-    "version": "0.2.2"
+    "version": "0.2.3"
 }
