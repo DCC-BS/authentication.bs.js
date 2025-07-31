@@ -25,7 +25,7 @@ export default defineNuxtModule({
             azureAdClientId: process.env.AZURE_AD_CLIENT_ID,
             azureAdClientSecret: process.env.AZURE_AD_CLIENT_SECRET,
             azureAdAPIClientId: process.env.AZURE_AD_API_CLIENT_ID,
-            authSecret: process.env.NUXT_AUTH_SECRET,
+            authSecret: process.env.AUTH_SECRET,
         };
 
         await installModule("@sidebase/nuxt-auth", {
