@@ -3,87 +3,14 @@ import { createError, defineEventHandler, readBody } from "h3";
 import { getServerSession, getToken } from "#auth";
 import type { ExtendedJWT, ExtendedSession } from "#auth";
 import { useRuntimeConfig } from "#imports";
-
-/**
- * Function type for extracting the request body from an H3 event
- * @template TIn - The event handler request type
- * @template TBody - The expected body type
- */ useRuntimeConfig;
-export type BodyProvider<TIn extends EventHandlerRequest, TBody> = (
-    event: H3Event<TIn>,
-) => Promise<TBody>;
-
-/**
- * Function type for processing backend responses before returning to the client
- * @template T - The backend response type
- * @template D - The final response type to return to the client
- */
-export type BackendHandler<T, D> = (response: T) => Promise<D>;
-
-/**
- * Function type for making HTTP requests to the backend
- * @template T - The response type from the backend
- */
-export type Fetcher<TBody, TResponse> = (
-    url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    body: TBody,
-    headers: Record<string, string>,
-) => Promise<TResponse>;
-
-/**
- * Default body provider that extracts and parses the request body using H3's readBody
- * @template TRequest - The event handler request type
- * @template TBody - The expected body type
- * @param event - The H3 event object
- * @returns Promise resolving to the parsed request body
- */
-async function extractEventBody<TRequest extends EventHandlerRequest, TBody>(
-    event: H3Event<TRequest>,
-): Promise<TBody> {
-    return readBody<TBody>(event);
-}
-
-export async function noBody<TRequest extends EventHandlerRequest>(
-    _: H3Event<TRequest>,
-): Promise<undefined> {
-    return undefined;
-}
-
-/**
- * Default response handler that simply passes through the backend response
- * @template TBackendResponse - The type of response from the backend
- * @template TResponse - The final response type (defaults to backend response type)
- * @param response - The response from the backend API
- * @returns Promise resolving to the response cast to the expected type
- */
-export async function defaultHandler<TBackendResponse, TResponse>(
-    response: TBackendResponse,
-): Promise<TResponse> {
-    return response as unknown as TResponse;
-}
-
-/**
- * Default fetcher that uses Nuxt's $fetch utility
- * @template T - The response type from the backend
- * @param url - The full URL to fetch from
- * @param method - HTTP method to use
- * @param body - Request body (will be JSON stringified)
- * @param headers - HTTP headers to include
- * @returns Promise resolving to the backend response
- */
-export async function defaultFetcher<T>(
-    url: string,
-    method: "GET" | "POST" | "PUT" | "DELETE",
-    body: unknown,
-    headers: Record<string, string>,
-): Promise<T> {
-    return await $fetch(url, {
-        method,
-        body: JSON.stringify(body),
-        headers,
-    });
-}
+import {
+    defaultHandler,
+    defaultFetcher,
+    type BodyProvider,
+    type BackendHandler,
+    type Fetcher,
+    getDefaultBodyProvider,
+} from "../models";
 
 /**
  * Default configuration options for backend handler
@@ -93,20 +20,6 @@ const defaultOptions = {
     handler: defaultHandler,
     fetcher: defaultFetcher,
 };
-
-function getDefaultBodyProvider<TRequest extends EventHandlerRequest, TBody>(
-    method?: "GET" | "POST" | "PUT" | "DELETE",
-): BodyProvider<TRequest, TBody> {
-    switch (method) {
-        case undefined:
-            return noBody as BodyProvider<TRequest, TBody>;
-        case "GET":
-        case "DELETE":
-            return noBody as BodyProvider<TRequest, TBody>;
-        default:
-            return extractEventBody;
-    }
-}
 
 /**
  * Creates a Nuxt server event handler that proxies requests to a backend API with authentication
@@ -202,7 +115,15 @@ export const defineBackendHandler = <
             }
 
             // Ensure user is authenticated
-            if (!session && !token) {
+            if (!session || !token) {
+                throw createError({
+                    statusCode: 401,
+                    statusMessage: "Unauthorized",
+                    message: "You must be logged in to access this resource.",
+                });
+            }
+
+            if (!("apiAccessToken" in session)) {
                 throw createError({
                     statusCode: 401,
                     statusMessage: "Unauthorized",
@@ -214,25 +135,47 @@ export const defineBackendHandler = <
             const apiAccessToken = session?.apiAccessToken;
 
             // Make authenticated request to backend API using the configured fetcher
-            const backendResponse = await fetcher(
-                `${config.apiUrl}${url}`,
+            const backendResponse = await fetcher({
+                url: `${config.apiUrl}/${url}`,
                 method,
                 body,
-                {
+                headers: {
                     "Content-Type": "application/json",
-                    Authorization: apiAccessToken ? `Bearer ${apiAccessToken}` : "",
+                    Authorization: apiAccessToken
+                        ? `Bearer ${apiAccessToken}`
+                        : "",
                 },
-            );
+                event,
+            });
 
             // Transform the backend response using the configured handler
             return await handler(backendResponse as TBackendResponse);
-        } catch (err) {
+        } catch (err: unknown) {
+            let errorMessage = "An unexpected error occurred";
+            let errorCode = 500;
+            let statusMessage = "Backend Communication Error";
+
+            if (typeof err === "string") {
+                errorMessage = err;
+            } else if (err instanceof Error) {
+                errorMessage = err.message;
+            }
+
+            if (typeof err === "object" && err && "statusCode" in err) {
+                if ("statusCode" in err) {
+                    errorCode = err.statusCode as number;
+                }
+                if ("statusMessage" in err) {
+                    statusMessage = err.statusMessage as string;
+                }
+            }
+
             // preserve error structure for client
             if (err && typeof err === "object" && "statusCode" in err) {
                 throw createError({
-                    statusCode: err.statusCode,
-                    statusMessage: err.statusMessage,
-                    message: err.message,
+                    statusCode: errorCode,
+                    statusMessage: statusMessage,
+                    message: errorMessage,
                     data: { originalError: err },
                 });
             }

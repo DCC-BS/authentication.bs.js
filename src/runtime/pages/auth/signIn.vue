@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { useAuth } from '#imports'
+import { useAuth,  definePageMeta } from '#imports'
 import { useI18n, availableLocales, defaultLocale } from '../../localization';
+
+definePageMeta({ auth: false });
 
 const { signIn } = useAuth();
 const route = useRoute();
