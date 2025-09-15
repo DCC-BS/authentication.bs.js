@@ -141,7 +141,7 @@ export const defineBackendHandler = <
 
             // Make authenticated request to backend API using the configured fetcher
             const backendResponse = await fetcher({
-                url: `${config.apiUrl}/${url}`,
+                url: `${config.apiUrl}${url}`,
                 method,
                 body,
                 headers: {
