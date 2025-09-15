@@ -1,8 +1,5 @@
 <script setup lang="ts">
-
 const { signOut } = useAuth();
-
-
 </script>
 
 <template>

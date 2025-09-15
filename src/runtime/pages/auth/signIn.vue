@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { useRoute } from "vue-router";
-import { useAuth,  definePageMeta } from '#imports'
-import { useI18n, availableLocales, defaultLocale } from '../../localization';
+import { definePageMeta, useAuth } from "#imports";
+import { availableLocales, defaultLocale, useI18n } from "../../localization";
 
 definePageMeta({ auth: false });
 
@@ -11,7 +11,7 @@ const route = useRoute();
 
 // Extract locale from URL path (e.g., /en/auth/signin -> "en")
 function getLocaleFromUrl(): string {
-    const pathSegments = route.path.split('/').filter(Boolean);
+    const pathSegments = route.path.split("/").filter(Boolean);
     const potentialLocale = pathSegments[0];
 
     // Check if the first path segment is a valid locale

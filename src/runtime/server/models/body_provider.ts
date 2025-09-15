@@ -5,7 +5,7 @@ import { readBody } from "h3";
  * Function type for extracting the request body from an H3 event
  * @template TIn - The event handler request type
  * @template TBody - The expected body type
- */ useRuntimeConfig;
+ */
 export type BodyProvider<TIn extends EventHandlerRequest, TBody> = (
     event: H3Event<TIn>,
 ) => Promise<TBody>;

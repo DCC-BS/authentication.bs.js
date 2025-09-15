@@ -1,13 +1,12 @@
-import type { EventHandler, EventHandlerRequest, H3Event } from "h3";
-import { createError, defineEventHandler, readBody } from "h3";
-import { getServerSession, getToken } from "#auth";
+import type { EventHandler, EventHandlerRequest } from "h3";
 import type { ExtendedJWT, ExtendedSession } from "#auth";
+import { getServerSession, getToken } from "#auth";
 import { useRuntimeConfig } from "#imports";
 import {
-    defaultHandler,
-    defaultFetcher,
-    type BodyProvider,
     type BackendHandler,
+    type BodyProvider,
+    defaultFetcher,
+    defaultHandler,
     type Fetcher,
     getDefaultBodyProvider,
 } from "../models";

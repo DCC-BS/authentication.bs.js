@@ -1,18 +1,24 @@
 import AzureADProvider from "next-auth/providers/azure-ad";
 import { NuxtAuthHandler } from "#auth";
-import { useRuntimeConfig } from '#imports'
+import { useRuntimeConfig } from "#imports";
 
 // Helper function to decode JWT without verification (for reading claims)
-function decodeJWT(token) {
+function decodeJWT(token: string) {
     try {
-        const base64Url = token.split('.')[1];
-        const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-        const jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
-            return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
-        }).join(''));
+        const base64Url = token.split(".")[1];
+        const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+        const jsonPayload = decodeURIComponent(
+            atob(base64)
+                .split("")
+                .map(
+                    (c) =>
+                        `%${(`00${c.charCodeAt(0).toString(16)}`).slice(-2)}`,
+                )
+                .join(""),
+        );
         return JSON.parse(jsonPayload);
     } catch (error) {
-        console.error('Error decoding JWT:', error);
+        console.error("Error decoding JWT:", error);
         return null;
     }
 }
@@ -30,7 +36,7 @@ async function getApiAccessToken(refreshToken: unknown) {
     const response = await $fetch(url, {
         method: "POST",
         headers: {
-            'Content-Type': 'application/x-www-form-urlencoded',
+            "Content-Type": "application/x-www-form-urlencoded",
         },
         body: body,
     });
@@ -73,15 +79,19 @@ export default NuxtAuthHandler({
 
             // Check if we need to refresh the API access token
             const currentTimeInSeconds = Math.floor(Date.now() / 1000);
-            const tokenExpired = !session.apiAccessTokenExpiresAt || session.apiAccessTokenExpiresAt <= currentTimeInSeconds;
+            const tokenExpired =
+                !session.apiAccessTokenExpiresAt ||
+                session.apiAccessTokenExpiresAt <= currentTimeInSeconds;
 
             if (!session.apiAccessToken || tokenExpired) {
-                session.apiAccessToken = await getApiAccessToken(token.refreshToken);
+                session.apiAccessToken = await getApiAccessToken(
+                    token.refreshToken,
+                );
                 const decoded = decodeJWT(session.apiAccessToken);
                 session.apiAccessTokenExpiresAt = decoded.exp;
                 session.user.roles = decoded.roles;
             }
             return session;
-        }
+        },
     },
 });
