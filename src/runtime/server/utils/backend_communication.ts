@@ -1,7 +1,12 @@
-import { createError, type EventHandler, type EventHandlerRequest } from "h3";
+import {
+    createError,
+    type EventHandler,
+    type EventHandlerRequest,
+    type H3Event,
+} from "h3";
 import type { ExtendedJWT, ExtendedSession } from "#auth";
 import { getServerSession, getToken } from "#auth";
-import { defineEventHandler, useRuntimeConfig } from "#imports";
+import { useRuntimeConfig } from "#imports";
 import {
     type BackendHandler,
     type BodyProvider,
@@ -74,7 +79,7 @@ export const defineBackendHandler = <
     handler?: BackendHandler<TBackendResponse, TResponse>;
     fetcher?: Fetcher<TBody, TBackendResponse>;
 }): EventHandler<TRequest, Promise<TResponse>> =>
-    defineEventHandler<TRequest>(async (event) => {
+    defineEventHandler<TRequest>(async (event: H3Event) => {
         try {
             // Merge provided options with defaults
             const { url, method, bodyProvider, handler, fetcher } = {
