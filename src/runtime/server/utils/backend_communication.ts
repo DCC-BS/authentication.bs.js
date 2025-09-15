@@ -1,4 +1,5 @@
 import {
+    createError,
     defineEventHandler,
     type EventHandler,
     type EventHandlerRequest,
