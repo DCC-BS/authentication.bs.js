@@ -1,4 +1,8 @@
-import type { EventHandler, EventHandlerRequest } from "h3";
+import {
+    defineEventHandler,
+    type EventHandler,
+    type EventHandlerRequest,
+} from "h3";
 import type { ExtendedJWT, ExtendedSession } from "#auth";
 import { getServerSession, getToken } from "#auth";
 import { useRuntimeConfig } from "#imports";
