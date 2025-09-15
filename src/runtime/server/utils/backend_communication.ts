@@ -1,12 +1,7 @@
-import {
-    createError,
-    defineEventHandler,
-    type EventHandler,
-    type EventHandlerRequest,
-} from "h3";
+import { createError, type EventHandler, type EventHandlerRequest } from "h3";
 import type { ExtendedJWT, ExtendedSession } from "#auth";
 import { getServerSession, getToken } from "#auth";
-import { useRuntimeConfig } from "#imports";
+import { defineEventHandler, useRuntimeConfig } from "#imports";
 import {
     type BackendHandler,
     type BodyProvider,
