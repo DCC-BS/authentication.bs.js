@@ -1,5 +1,6 @@
 import {
     createError,
+    defineEventHandler,
     type EventHandler,
     type EventHandlerRequest,
     type H3Event,
