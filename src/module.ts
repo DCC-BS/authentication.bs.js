@@ -1,4 +1,6 @@
 import {
+    addImports,
+    addImportsDir,
     addServerScanDir,
     createResolver,
     defineNuxtModule,
@@ -32,6 +34,7 @@ export default defineNuxtModule<ModuleOptions>({
         addServerScanDir(resolver.resolve("./runtime/server"));
 
         if (_options.isEnabled === false) {
+            addImportsDir(resolver.resolve("./runtime/dummy-composables"));
             return;
         }
 
