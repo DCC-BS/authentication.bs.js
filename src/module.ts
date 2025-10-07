@@ -6,14 +6,21 @@ import {
     installModule,
 } from "@nuxt/kit";
 
-export default defineNuxtModule({
+interface ModuleOptions {
+    isEnabled?: boolean;
+}
+
+export default defineNuxtModule<ModuleOptions>({
     meta: {
         name: "authentication.bs.js",
         configKey: "authentication.bs.js",
     },
-    // Default configuration options of the Nuxt module
-    defaults: {},
+    defaults: { isEnabled: true },
     async setup(_options, nuxt) {
+        if (_options.isEnabled === false) {
+            return;
+        }
+
         const resolver = createResolver(import.meta.url);
 
         // Set runtime configuration
