@@ -39,7 +39,7 @@ export default defineNuxtModule<ModuleOptions>({
         addServerScanDir(resolver.resolve("./runtime/server"));
 
         if (_options.useDummy === true) {
-            addImportsDir(resolver.resolve("./runtime/dummy-composables"));
+            addImportsDir(resolver.resolve("./runtime/dummy"));
             nuxt.options.alias["#auth"] = resolveAlias(
                 resolver.resolve("./runtime/dummy-composables"),
             );
