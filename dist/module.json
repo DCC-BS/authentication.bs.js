@@ -1,0 +1,9 @@
+{
+  "name": "authentication.bs.js",
+  "configKey": "authentication.bs.js",
+  "version": "0.2.16",
+  "builder": {
+    "@nuxt/module-builder": "1.0.1",
+    "unbuild": "3.6.0"
+  }
+}
