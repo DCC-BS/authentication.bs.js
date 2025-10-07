@@ -1,5 +1,5 @@
 import {
-    addImports,
+    resolveAlias,
     addImportsDir,
     addServerScanDir,
     createResolver,
@@ -35,6 +35,9 @@ export default defineNuxtModule<ModuleOptions>({
 
         if (_options.isEnabled === false) {
             addImportsDir(resolver.resolve("./runtime/dummy-composables"));
+            nuxt.options.alias["~auth"] = resolveAlias(
+                resolver.resolve("./runtime/dummy-composables")
+            );
             return;
         }
 
