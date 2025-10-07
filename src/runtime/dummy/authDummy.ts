@@ -4,9 +4,21 @@ import type {
 } from "@sidebase/nuxt-auth/dist/runtime/composables/authjs/useAuth";
 import type { SessionData } from "@sidebase/nuxt-auth/dist/runtime/composables/authjs/useAuthState";
 import type {
+    getServerSession as originalGetServerSession,
+    getToken as originalGetToken,
+} from "@sidebase/nuxt-auth/dist/runtime/server/services/";
+import type {
     GetSessionFunc,
     ProviderAuthjs,
 } from "@sidebase/nuxt-auth/dist/runtime/types";
+
+export const getServerSession: typeof originalGetServerSession = (_) => {
+    return Promise.resolve(null);
+};
+
+export const getToken: typeof originalGetToken = (_) => {
+    return Promise.resolve(null);
+};
 
 export function useAuth() {
     const status = "unauthenticated";
