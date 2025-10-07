@@ -17,10 +17,6 @@ export default defineNuxtModule<ModuleOptions>({
     },
     defaults: { isEnabled: true },
     async setup(_options, nuxt) {
-        if (_options.isEnabled === false) {
-            return;
-        }
-
         const resolver = createResolver(import.meta.url);
 
         // Set runtime configuration
@@ -32,6 +28,12 @@ export default defineNuxtModule<ModuleOptions>({
             azureAdAPIClientId: process.env.AZURE_AD_API_CLIENT_ID ?? "NA",
             authSecret: process.env.AUTH_SECRET ?? "NA",
         };
+
+        addServerScanDir(resolver.resolve("./runtime/server"));
+
+        if (_options.isEnabled === false) {
+            return;
+        }
 
         await installModule("@sidebase/nuxt-auth", {
             isEnabled: true,
@@ -63,6 +65,5 @@ export default defineNuxtModule<ModuleOptions>({
             });
         });
 
-        addServerScanDir(resolver.resolve("./runtime/server"));
     },
 });
