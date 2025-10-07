@@ -22,7 +22,7 @@ export default defineBackendHandler<
 >({
     url: "/docs",
     method: "GET",
-    fetcher: async (body) => {
+    fetcher: async (_) => {
         // Simulate fetching data from a backend service
         // In a real scenario, you would use `fetch` or another HTTP client to get data
         return {

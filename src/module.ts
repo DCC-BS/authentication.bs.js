@@ -1,15 +1,16 @@
 import {
-    resolveAlias,
     addImportsDir,
     addServerScanDir,
     createResolver,
     defineNuxtModule,
     extendPages,
     installModule,
+    resolveAlias,
 } from "@nuxt/kit";
 
 interface ModuleOptions {
     isEnabled?: boolean;
+    useDummy: boolean;
 }
 
 export default defineNuxtModule<ModuleOptions>({
@@ -19,6 +20,10 @@ export default defineNuxtModule<ModuleOptions>({
     },
     defaults: { isEnabled: true },
     async setup(_options, nuxt) {
+        if (_options.isEnabled === false) {
+            return;
+        }
+
         const resolver = createResolver(import.meta.url);
 
         // Set runtime configuration
@@ -33,10 +38,10 @@ export default defineNuxtModule<ModuleOptions>({
 
         addServerScanDir(resolver.resolve("./runtime/server"));
 
-        if (_options.isEnabled === false) {
+        if (_options.useDummy === true) {
             addImportsDir(resolver.resolve("./runtime/dummy-composables"));
-            nuxt.options.alias["~auth"] = resolveAlias(
-                resolver.resolve("./runtime/dummy-composables")
+            nuxt.options.alias["#auth"] = resolveAlias(
+                resolver.resolve("./runtime/dummy-composables"),
             );
             return;
         }
@@ -70,6 +75,5 @@ export default defineNuxtModule<ModuleOptions>({
                 },
             });
         });
-
     },
 });

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 const { signOut } = useAuth();
 
-const { data, error, pending } = await useFetch('/api/test', { method: 'GET' });
+const { data, error, pending } = await useFetch("/api/test", { method: "GET" });
 </script>
 
 <template>
