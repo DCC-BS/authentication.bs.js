@@ -1,4 +1,6 @@
 import type {
+    GetProvidersResult,
+    useAuth as originalUseAuth,
     SignInFunc,
     SignOutFunc,
 } from "@sidebase/nuxt-auth/dist/runtime/composables/authjs/useAuth";
@@ -9,8 +11,9 @@ import type {
 } from "@sidebase/nuxt-auth/dist/runtime/server/services/";
 import type {
     GetSessionFunc,
-    ProviderAuthjs,
+    SessionStatus,
 } from "@sidebase/nuxt-auth/dist/runtime/types";
+import { computed, ref } from "vue";
 
 export const getServerSession: typeof originalGetServerSession = (_) => {
     return Promise.resolve(null);
@@ -20,17 +23,17 @@ export const getToken: typeof originalGetToken = (_) => {
     return Promise.resolve(null);
 };
 
-export function useAuth() {
-    const status = "unauthenticated";
-    const data = undefined as SessionData | undefined;
-    const lastRefreshedAt = undefined as Date | undefined;
+export const useAuth: typeof originalUseAuth = () => {
+    const status = computed(() => "unauthenticated" as SessionStatus);
+    const data = ref(undefined as SessionData | undefined);
+    const lastRefreshedAt = ref(undefined as Date | undefined);
 
     function getCsrfToken() {
-        return "dummy";
+        return Promise.resolve("dummy");
     }
 
     function getProviders() {
-        return [] as ProviderAuthjs[];
+        return Promise.resolve({} as GetProvidersResult);
     }
 
     const getSession: GetSessionFunc<SessionData> = (_) => {
@@ -59,5 +62,6 @@ export function useAuth() {
         getSession,
         signIn,
         signOut,
+        refresh: () => Promise.resolve(),
     };
-}
+};
