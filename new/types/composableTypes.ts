@@ -1,9 +1,14 @@
-import type { AuthData } from './authData';
 import type { Ref } from 'vue';
+import type { AuthData } from './authData';
 
-export type SingOut = () => Promise<void>;
+export type SignOut = () => Promise<void>;
+export type SignIn = () => Promise<void>;
 
-export type useAuth = () => {
-  singOut: SingOut;
-  data: Ref<AuthData | null>;
-}
+export type UseAppAuthReturns = {
+    signIn: SignIn;
+    signOut: SignOut;
+    data: Readonly<Ref<AuthData | null>>;
+    isEnabled: Readonly<Ref<boolean>>;
+};
+
+export type UseAppAuth = () => UseAppAuthReturns;
