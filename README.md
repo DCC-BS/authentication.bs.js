@@ -1,3 +1,6 @@
+> [!WARNING]
+> This package is depricated use the [auth](https://github.com/DCC-BS/nuxt-layers/tree/main/auth) nuxt layer form [nuxt-layers](https://github.com/DCC-BS/nuxt-layers).
+
 # authentication.bs.js
 
 ![GitHub package.json version](https://img.shields.io/github/package-json/v/DCC-BS/authentication.bs.js)
